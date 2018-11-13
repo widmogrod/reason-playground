@@ -23,45 +23,86 @@ function addToCart(c, i) {
   }
 }
 
-function axioms(add, a, b, c) {
-  if (!Caml_obj.caml_equal(/* Empty */0, /* Empty */0)) {
+function equal(a, b) {
+  if (typeof a === "number") {
+    if (typeof b === "number") {
+      return true;
+    } else {
+      return false;
+    }
+  } else if (a.tag) {
+    if (typeof b === "number" || !(b.tag && a[1] === b[1])) {
+      return false;
+    } else {
+      return Curry._2(Products[/* equal */10], a[0], b[0]);
+    }
+  } else if (typeof b === "number" || b.tag) {
+    return false;
+  } else {
+    return Curry._2(Products[/* equal */10], a[0], b[0]);
+  }
+}
+
+function axioms(add, a, b) {
+  if (!equal(/* Empty */0, /* Empty */0)) {
     throw [
           Caml_builtin_exceptions.assert_failure,
           /* tuple */[
             "DDD.re",
-            26,
+            36,
             2
           ]
         ];
   }
-  if (!Caml_obj.caml_equal(Curry._2(add, /* Empty */0, a), Curry._2(add, /* Empty */0, a))) {
+  if (!equal(Curry._2(add, /* Empty */0, a), Curry._2(add, /* Empty */0, a))) {
     throw [
           Caml_builtin_exceptions.assert_failure,
           /* tuple */[
             "DDD.re",
-            27,
+            38,
             2
           ]
         ];
   }
-  if (Caml_obj.caml_equal(Curry._2(add, Curry._2(add, /* Empty */0, a), a), Curry._2(add, /* Empty */0, a))) {
+  if (equal(Curry._2(add, /* Empty */0, a), Curry._2(add, /* Empty */0, b))) {
+    throw [
+          Caml_builtin_exceptions.assert_failure,
+          /* tuple */[
+            "DDD.re",
+            40,
+            2
+          ]
+        ];
+  }
+  if (!equal(Curry._2(add, Curry._2(add, /* Empty */0, a), a), Curry._2(add, /* Empty */0, a))) {
+    throw [
+          Caml_builtin_exceptions.assert_failure,
+          /* tuple */[
+            "DDD.re",
+            42,
+            2
+          ]
+        ];
+  }
+  if (equal(Curry._2(add, Curry._2(add, /* Empty */0, a), b), Curry._2(add, Curry._2(add, /* Empty */0, b), a))) {
     return 0;
   } else {
     throw [
           Caml_builtin_exceptions.assert_failure,
           /* tuple */[
             "DDD.re",
-            28,
+            44,
             2
           ]
         ];
   }
 }
 
-axioms(addToCart, "iPhone XR", "iPad", "Mac");
+axioms(addToCart, "iPhone", "Mac");
 
 exports.ProductList = ProductList;
 exports.Products = Products;
 exports.addToCart = addToCart;
+exports.equal = equal;
 exports.axioms = axioms;
 /* Products Not a pure module */

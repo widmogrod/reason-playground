@@ -21,12 +21,27 @@ let addToCart = (c, i) =>
   | PayedCart(_) => c
   };
 
-let axioms = (add, a, b, c) => {
+let equal = (a, b) =>
+  switch (a, b) {
+  | (Empty, Empty) => true
+  | (ActiveCart(aa), ActiveCart(bs)) => Products.equal(aa, bs)
+  | (PayedCart(aa, am), PayedCart(bs, bm)) =>
+    am == bm && Products.equal(aa, bs)
+  | (_, _) => false
+  };
+
+let axioms = (add, a, b) => {
   let c = Empty;
-  assert(c == c);
-  assert(add(c, a) == add(c, a));
-  assert(add(add(c, a), a) == add(c, a));
-  /* assert(add(add(c, a), b) == add(add(c, b), a)); */
+  /* Empty carts are the same */
+  assert(equal(c, c));
+  /* Adding same items to two cars, means that they are equal */
+  assert(equal(add(c, a), add(c, a)));
+  /* Adding two different items to cart, means that they are different */
+  assert(!equal(add(c, a), add(c, b)));
+  /* Indepotent. Adding two times, same item into cart means that carts are the same */
+  assert(equal(add(add(c, a), a), add(c, a)));
+  /* Commutative. Adding two items to the carts in different order results in the same cart */
+  assert(equal(add(add(c, a), b), add(add(c, b), a)));
 };
 
-let () = axioms(addToCart, "iPhone XR", "iPad", "Mac");
+let () = axioms(addToCart, "iPhone", "Mac");
