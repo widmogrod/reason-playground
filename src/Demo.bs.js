@@ -5,7 +5,7 @@ var DDD$ReasonPlayground = require("./DDD.bs.js");
 
 console.log("Hello, BuckleScript and Reason!");
 
-DDD$ReasonPlayground.axioms(DDD$ReasonPlayground.addToCart, "iPhoneX", "iPad", "Mac");
+DDD$ReasonPlayground.axioms(DDD$ReasonPlayground.addToCart, "iPhoneX", "iPad");
 
 var ageAndName = /* tuple */[
   33,
