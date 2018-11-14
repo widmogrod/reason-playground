@@ -7,3 +7,4 @@ type person = {
 let me = {age: 5, name: "Big Reason"};
 
 DDD.(axioms(addToCart, "iPhoneX", "iPad", "Mac"));
+Typed.run();
