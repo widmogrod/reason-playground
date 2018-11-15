@@ -21,12 +21,30 @@ type typ =
   | TList
   | TDate
   | TSet
-  | TRegexp(string);
+  | TRegexp(string)
+  | TDefined(string, typ);
 
-type scheme = (list(string), typ);
+type scheme =
+  | Scheme(list(string), typ);
 
 type envType = StringMap.t(typ);
-let m: envType = StringMap.(empty |> add("a", TBool) |> add("a", TNumber));
+/*
+
+ type match _url$ = Regexp(#\w+://.+#i)
+ type sufix _url = Regexp(#\w+://.+#i)
+
+ {
+   "__types__": {
+     "sufix _url":["Regexp", "#\w+://.+#i"],
+   },
+ }
+
+  */
+
+let m: envType =
+  StringMap.(
+    empty |> add("_url$", TDefined("_url", TRegexp("#\w+://.+#i")))
+  );
 
 Js.log(m);
 

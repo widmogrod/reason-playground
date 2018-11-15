@@ -12,7 +12,10 @@ var StringOrd = /* module */[/* compare */compare];
 
 var StringMap = $$Map.Make(StringOrd);
 
-var m = Curry._3(StringMap[/* add */3], "a", /* TNumber */1, Curry._3(StringMap[/* add */3], "a", /* TBool */0, StringMap[/* empty */0]));
+var m = Curry._3(StringMap[/* add */3], "_url$", /* TDefined */Block.__(1, [
+        "_url",
+        /* TRegexp */Block.__(0, ["#\\w+://.+#i"])
+      ]), StringMap[/* empty */0]);
 
 console.log(m);
 
