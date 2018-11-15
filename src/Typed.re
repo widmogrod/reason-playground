@@ -1,3 +1,10 @@
+module StringOrd = {
+  type t = string;
+  let compare = (a, b) => Pervasives.compare(a, b);
+};
+
+module StringMap = Map.Make(StringOrd);
+
 type expression =
   | EObject(list((string, expression)))
   | EArray(list(expression))
@@ -15,6 +22,13 @@ type typ =
   | TDate
   | TSet
   | TRegexp(string);
+
+type scheme = (list(string), typ);
+
+type envType = StringMap.t(typ);
+let m: envType = StringMap.(empty |> add("a", TBool) |> add("a", TNumber));
+
+Js.log(m);
 
 /** Url type */
 let e1 =
