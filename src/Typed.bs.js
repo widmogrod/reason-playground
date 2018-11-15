@@ -12,10 +12,16 @@ var StringOrd = /* module */[/* compare */compare];
 
 var StringMap = $$Map.Make(StringOrd);
 
-var m = Curry._3(StringMap[/* add */3], "_url$", /* TDefined */Block.__(1, [
-        "_url",
-        /* TRegexp */Block.__(0, ["#\\w+://.+#i"])
-      ]), StringMap[/* empty */0]);
+var m = Curry._3(StringMap[/* add */3], "_tracing_type$", /* TSum */Block.__(1, [
+        /* TLit */Block.__(0, [/* LString */Block.__(2, ["jaeger"])]),
+        /* TSum */Block.__(1, [
+            /* TLit */Block.__(0, [/* LString */Block.__(2, ["opentracing"])]),
+            /* TLit */Block.__(0, [/* LString */Block.__(2, ["none"])])
+          ])
+      ]), Curry._3(StringMap[/* add */3], "_path$", /* TIO */2, Curry._3(StringMap[/* add */3], "_password$", /* TPassword */6, Curry._3(StringMap[/* add */3], "_enabled$", /* TBool */0, Curry._3(StringMap[/* add */3], "_url$", /* TDefined */Block.__(3, [
+                        "_url",
+                        /* TRegexp */Block.__(2, ["#\\w+://.+#i"])
+                      ]), StringMap[/* empty */0])))));
 
 console.log(m);
 
@@ -29,6 +35,8 @@ var e1 = /* EObject */Block.__(0, [/* :: */[
       /* [] */0
     ]]);
 
+var r1 = "{postgres_url = _url of regexp}";
+
 var e2 = /* EObject */Block.__(0, [/* :: */[
       /* tuple */[
         "mysql_slave_password",
@@ -36,6 +44,8 @@ var e2 = /* EObject */Block.__(0, [/* :: */[
       ],
       /* [] */0
     ]]);
+
+var r2 = "{mysql_slave_password = _password of password}";
 
 var e3 = /* EObject */Block.__(0, [/* :: */[
       /* tuple */[
@@ -45,6 +55,8 @@ var e3 = /* EObject */Block.__(0, [/* :: */[
       /* [] */0
     ]]);
 
+var r3 = "{is_enabled = _enabled of bool}";
+
 var e4 = /* EObject */Block.__(0, [/* :: */[
       /* tuple */[
         "distributed_tracing_type",
@@ -52,6 +64,8 @@ var e4 = /* EObject */Block.__(0, [/* :: */[
       ],
       /* [] */0
     ]]);
+
+var r4 = "{distributed_tracing_type = _tracing_type of sum of string [opentracing, jaeger, none]}";
 
 var e5 = /* EObject */Block.__(0, [/* :: */[
       /* tuple */[
@@ -61,12 +75,19 @@ var e5 = /* EObject */Block.__(0, [/* :: */[
       /* [] */0
     ]]);
 
+var r5 = "{icon_path = _paht of io}";
+
 exports.StringOrd = StringOrd;
 exports.StringMap = StringMap;
 exports.m = m;
 exports.e1 = e1;
+exports.r1 = r1;
 exports.e2 = e2;
+exports.r2 = r2;
 exports.e3 = e3;
+exports.r3 = r3;
 exports.e4 = e4;
+exports.r4 = r4;
 exports.e5 = e5;
+exports.r5 = r5;
 /* StringMap Not a pure module */
