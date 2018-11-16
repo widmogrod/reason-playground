@@ -6,48 +6,99 @@ var List = require("bs-platform/lib/js/list.js");
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var Format = require("bs-platform/lib/js/format.js");
-var Caml_obj = require("bs-platform/lib/js/caml_obj.js");
+var $$String = require("bs-platform/lib/js/string.js");
 var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions.js");
 
-var compare = Caml_obj.caml_compare;
-
-var StringOrd = /* module */[/* compare */compare];
+var StringOrd = /* module */[/* compare */$$String.compare];
 
 var StringMap = $$Map.Make(StringOrd);
 
-var m = Curry._3(StringMap[/* add */3], "_tracing_type$", /* TSum */Block.__(2, [
-        /* TLit */Block.__(1, [/* LString */["jaeger"]]),
+var env = Curry._3(StringMap[/* add */3], "_tracing_type$", /* TDefined */Block.__(4, [
+        "_tracing_type",
         /* TSum */Block.__(2, [
-            /* TLit */Block.__(1, [/* LString */["opentracing"]]),
-            /* TLit */Block.__(1, [/* LString */["none"]])
+            /* TLit */Block.__(1, [/* LString */["jaeger"]]),
+            /* TSum */Block.__(2, [
+                /* TLit */Block.__(1, [/* LString */["opentracing"]]),
+                /* TLit */Block.__(1, [/* LString */["none"]])
+              ])
           ])
-      ]), Curry._3(StringMap[/* add */3], "_path$", /* TIO */0, Curry._3(StringMap[/* add */3], "_password$", /* TPassword */1, Curry._3(StringMap[/* add */3], "_enabled$", /* TLit */Block.__(1, [/* LBool */1]), Curry._3(StringMap[/* add */3], "_url$", /* TDefined */Block.__(4, [
+      ]), Curry._3(StringMap[/* add */3], "_path$", /* TDefined */Block.__(4, [
+            "_path",
+            /* TIO */0
+          ]), Curry._3(StringMap[/* add */3], "_password$", /* TDefined */Block.__(4, [
+                "_password",
+                /* TPassword */1
+              ]), Curry._3(StringMap[/* add */3], "_enabled$", /* TDefined */Block.__(4, [
+                    "_enabled",
+                    /* TLit */Block.__(1, [/* LBool */1])
+                  ]), Curry._3(StringMap[/* add */3], "_url$", /* TDefined */Block.__(4, [
                         "_url",
                         /* TRegexp */Block.__(3, ["#\\w+://.+#i"])
                       ]), StringMap[/* empty */0])))));
 
-console.log(m);
+console.log(env);
 
 var e1 = /* EObject */Block.__(0, [Curry._3(StringMap[/* add */3], "postgres_url", /* EString */Block.__(1, ["tcp://postgress@postgress:postgress/"]), StringMap[/* empty */0])]);
 
-var r1 = "{ postgres_url = _url of regexp}";
+var r1 = "{postgres_url = _url of regexp}";
 
 var e2 = /* EObject */Block.__(0, [Curry._3(StringMap[/* add */3], "mysql_slave_password", /* EString */Block.__(1, ["$!L!K@L!@KJ$LKH@!$"]), StringMap[/* empty */0])]);
 
+var r2 = "{mysql_slave_password = _password of password}";
+
 var e3 = /* EObject */Block.__(0, [Curry._3(StringMap[/* add */3], "is_enabled", /* ETrue */0, StringMap[/* empty */0])]);
+
+var r3 = "{is_enabled = _enabled of bool}";
 
 var e4 = /* EObject */Block.__(0, [Curry._3(StringMap[/* add */3], "distributed_tracing_type", /* EString */Block.__(1, ["opentracing"]), StringMap[/* empty */0])]);
 
+var r4 = "{distributed_tracing_type = _tracing_type of sum [jaeger of string, sum [opentracing of string, none of string]]}";
+
 var e5 = /* EObject */Block.__(0, [Curry._3(StringMap[/* add */3], "icon_path", /* EString */Block.__(1, ["./path/to/local/file.png"]), StringMap[/* empty */0])]);
 
-function typeInference(e) {
+var r5 = "{icon_path = _path of io}";
+
+function infereRecord(env, key, e) {
+  return Curry._3(StringMap[/* fold */10], (function (k, v, agg) {
+                if (agg !== undefined) {
+                  return agg;
+                } else if (new RegExp(k).test(key)) {
+                  return v;
+                } else {
+                  return undefined;
+                }
+              }), env, undefined);
+}
+
+function typeInference(env, e) {
   if (typeof e === "number") {
     return /* TLit */Block.__(1, [/* LBool */1]);
   } else if (e.tag) {
     return /* TLit */Block.__(1, [/* LString */[e[0]]]);
   } else {
-    return /* TRecord */Block.__(0, [Curry._2(StringMap[/* map */22], typeInference, e[0])]);
+    return /* TRecord */Block.__(0, [Curry._2(StringMap[/* mapi */23], (function (k, v) {
+                      var x = infereRecord(env, k, v);
+                      if (x !== undefined) {
+                        return x;
+                      } else {
+                        console.log("Cannot find type for key=", k);
+                        return typeInference(env, e);
+                      }
+                    }), e[0])]);
   }
+}
+
+function $caret(a, b) {
+  return Curry._2(Format.sprintf(/* Format */[
+                  /* String */Block.__(2, [
+                      /* No_padding */0,
+                      /* String */Block.__(2, [
+                          /* No_padding */0,
+                          /* End_of_format */0
+                        ])
+                    ]),
+                  "%s%s"
+                ]), a, b);
 }
 
 function showType(t) {
@@ -73,25 +124,7 @@ function showType(t) {
                             ]),
                           "{%s}"
                         ]), Curry._3(StringMap[/* fold */10], (function (k, v, agg) {
-                            return Curry._3(Format.sprintf(/* Format */[
-                                            /* String */Block.__(2, [
-                                                /* No_padding */0,
-                                                /* Char_literal */Block.__(12, [
-                                                    /* " " */32,
-                                                    /* String */Block.__(2, [
-                                                        /* No_padding */0,
-                                                        /* String_literal */Block.__(11, [
-                                                            " = ",
-                                                            /* String */Block.__(2, [
-                                                                /* No_padding */0,
-                                                                /* End_of_format */0
-                                                              ])
-                                                          ])
-                                                      ])
-                                                  ])
-                                              ]),
-                                            "%s %s = %s"
-                                          ]), agg, k, showType(v));
+                            return $caret(agg, $caret(k, $caret(" = ", showType(v))));
                           }), t[0], ""));
       case 1 : 
           var l = t[0];
@@ -102,14 +135,14 @@ function showType(t) {
               return "int";
             }
           } else {
-            return "string";
+            return $caret(l[0], " of string");
           }
       case 2 : 
-          return "sum";
+          return $caret("sum [", $caret(showType(t[0]), $caret(", ", $caret(showType(t[1]), "]"))));
       case 3 : 
           return "regexp";
       case 4 : 
-          return t[0];
+          return $caret(t[0], $caret(" of ", showType(t[1])));
       
     }
   }
@@ -118,16 +151,17 @@ function showType(t) {
 function test_it(p) {
   var r = p[1];
   var e = p[0];
-  console.log("run expression of", e, r);
-  console.log("expected:", showType(typeInference(e)));
-  if (showType(typeInference(e)) === r) {
+  console.log("run expression of", e);
+  console.log("given   :", showType(typeInference(env, e)));
+  console.log("expected:", r);
+  if (showType(typeInference(env, e)) === r) {
     return 0;
   } else {
     throw [
           Caml_builtin_exceptions.assert_failure,
           /* tuple */[
             "Typed.re",
-            149,
+            188,
             4
           ]
         ];
@@ -141,20 +175,36 @@ List.map(test_it, /* :: */[
         e1,
         r1
       ],
-      /* [] */0
+      /* :: */[
+        /* tuple */[
+          e2,
+          r2
+        ],
+        /* :: */[
+          /* tuple */[
+            e3,
+            r3
+          ],
+          /* :: */[
+            /* tuple */[
+              e4,
+              r4
+            ],
+            /* :: */[
+              /* tuple */[
+                e5,
+                r5
+              ],
+              /* [] */0
+            ]
+          ]
+        ]
+      ]
     ]);
-
-var r2 = "{mysql_slave_password = _password of password}";
-
-var r3 = "{is_enabled = _enabled of bool}";
-
-var r4 = "{distributed_tracing_type = _tracing_type of sum of string [opentracing, jaeger, none]}";
-
-var r5 = "{icon_path = _paht of io}";
 
 exports.StringOrd = StringOrd;
 exports.StringMap = StringMap;
-exports.m = m;
+exports.env = env;
 exports.e1 = e1;
 exports.r1 = r1;
 exports.e2 = e2;
@@ -165,7 +215,9 @@ exports.e4 = e4;
 exports.r4 = r4;
 exports.e5 = e5;
 exports.r5 = r5;
+exports.infereRecord = infereRecord;
 exports.typeInference = typeInference;
+exports.$caret = $caret;
 exports.showType = showType;
 exports.test_it = test_it;
 /* StringMap Not a pure module */

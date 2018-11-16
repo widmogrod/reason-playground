@@ -1,6 +1,6 @@
 module StringOrd = {
   type t = string;
-  let compare = (a, b) => Pervasives.compare(a, b);
+  let compare = String.compare;
 };
 
 module StringMap = Map.Make(StringOrd);
@@ -45,27 +45,33 @@ type envType = StringMap.t(typ);
    "__types__": {
      "sufix _url":["Regexp", "#\w+://.+#i"],
    },
+   "some_url": "http://ho.ha",
+   "icon_path::type": ["io"],
+   "icon_path": "./somepath.jpg",
  }
 
   */
 
-let m: envType =
+let env: envType =
   StringMap.(
     empty
     |> add("_url$", TDefined("_url", TRegexp("#\w+://.+#i")))
-    |> add("_enabled$", TLit(LBool))
-    |> add("_password$", TPassword)
-    |> add("_path$", TIO)
+    |> add("_enabled$", TDefined("_enabled", TLit(LBool)))
+    |> add("_password$", TDefined("_password", TPassword))
+    |> add("_path$", TDefined("_path", TIO))
     |> add(
          "_tracing_type$",
-         TSum(
-           TLit(LString("jaeger")),
-           TSum(TLit(LString("opentracing")), TLit(LString("none"))),
+         TDefined(
+           "_tracing_type",
+           TSum(
+             TLit(LString("jaeger")),
+             TSum(TLit(LString("opentracing")), TLit(LString("none"))),
+           ),
          ),
        )
   );
 
-Js.log(m);
+Js.log(env);
 
 /** Url type */
 let e1 =
@@ -76,7 +82,7 @@ let e1 =
     ),
   );
 
-let r1 = "{ postgres_url = _url of regexp}";
+let r1 = {|{postgres_url = _url of regexp}|};
 
 /* Password type */
 let e2 =
@@ -85,11 +91,11 @@ let e2 =
       empty |> add("mysql_slave_password", EString("$!L!K@L!@KJ$LKH@!$"))
     ),
   );
-let r2 = "{mysql_slave_password = _password of password}";
+let r2 = {|{mysql_slave_password = _password of password}|};
 
 /* Bool type */
 let e3 = EObject(StringMap.(empty |> add("is_enabled", ETrue)));
-let r3 = "{is_enabled = _enabled of bool}";
+let r3 = {|{is_enabled = _enabled of bool}|};
 
 /* Union example */
 let e4 =
@@ -98,7 +104,7 @@ let e4 =
       empty |> add("distributed_tracing_type", EString("opentracing"))
     ),
   );
-let r4 = "{distributed_tracing_type = _tracing_type of sum of string [opentracing, jaeger, none]}";
+let r4 = {|{distributed_tracing_type = _tracing_type of sum [jaeger of string, sum [opentracing of string, none of string]]}|};
 
 /** File type */
 let e5 =
@@ -107,15 +113,47 @@ let e5 =
       empty |> add("icon_path", EString("./path/to/local/file.png"))
     ),
   );
-let r5 = "{icon_path = _paht of io}";
+let r5 = {|{icon_path = _path of io}|};
 
-let rec typeInference = (e: expression) =>
+let infereRecord = (env: envType, key: string, e: expression) =>
+  StringMap.fold(
+    (k, v, agg) =>
+      switch (agg) {
+      | None =>
+        if (Js.Re.(test(key, fromString(k)))) {
+          Some(v);
+        } else {
+          None;
+        }
+      | Some(_) => agg
+      },
+    env,
+    None,
+  );
+
+let rec typeInference = (env: envType, e: expression) =>
   switch (e) {
   | EFalse => TLit(LBool)
   | ETrue => TLit(LBool)
   | EString(v) => TLit(LString(v))
-  | EObject(map) => TRecord(StringMap.map(typeInference, map))
+  | EObject(map) =>
+    TRecord(
+      StringMap.mapi(
+        (k, v) => {
+          let x = infereRecord(env, k, v);
+          switch (x) {
+          | None =>
+            Js.log2({|Cannot find type for key=|}, k);
+            typeInference(env, e);
+          | Some(t) => t
+          };
+        },
+        map,
+      ),
+    )
   };
+
+let (++) = (a, b) => Format.sprintf({|%s%s|}, a, b);
 
 let rec showType = t =>
   switch (t) {
@@ -125,16 +163,16 @@ let rec showType = t =>
     switch (l) {
     | LInt => "int"
     | LBool => "bool"
-    | LString(_) => "string"
+    | LString(v) => v ++ {| of string|}
     }
-  | TSum(_, _) => "sum"
-  | TDefined(dt, _) => dt
+  | TSum(a, b) => {|sum [|} ++ showType(a) ++ {|, |} ++ showType(b) ++ {|]|}
+  | TDefined(definedType, o) => definedType ++ {| of |} ++ showType(o)
   | TRegexp(_) => "regexp"
   | TRecord(map) =>
     Format.sprintf(
       "{%s}",
       StringMap.fold(
-        (k, v, agg) => Format.sprintf("%s %s = %s", agg, k, showType(v)),
+        (k, v, agg) => agg ++ k ++ {| = |} ++ showType(v),
         map,
         "",
       ),
@@ -144,11 +182,12 @@ let rec showType = t =>
 let test_it = p =>
   switch (p) {
   | (e: expression, r: string) =>
-    Js.log3("run expression of", e, r);
-    Js.log2("expected:", showType(typeInference(e)));
-    assert(showType(typeInference(e)) == r);
+    Js.log2("run expression of", e);
+    Js.log2("given   :", showType(typeInference(env, e)));
+    Js.log2("expected:", r);
+    assert(showType(typeInference(env, e)) == r);
   };
 
 let () = Js.log("typed");
 
-[(e1, r1)] |> List.map(test_it);
+[(e1, r1), (e2, r2), (e3, r3), (e4, r4), (e5, r5)] |> List.map(test_it);
